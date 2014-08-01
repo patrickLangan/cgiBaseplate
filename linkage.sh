@@ -1,4 +1,7 @@
 #!/bin/bash
-ln -s /etc/nginx/nginx.conf ./
-ln -s /etc/nginx/fastcgi_params ./
+rm /etc/nginx/nginx.conf
+cp nginx.conf /etc/nginx
+
+rm /etc/nginx/fastcgi_params
+cp fastcgi_params /etc/nginx
 
