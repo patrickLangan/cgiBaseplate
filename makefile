@@ -1,2 +1,2 @@
 ALL:
-	gcc spy.c -lfcgi -o spy
+	gcc post.c -lfcgi -o post
