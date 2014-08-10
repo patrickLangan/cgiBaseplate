@@ -26,4 +26,9 @@ make <br>
 ./startup.sh <br>
 ./linkage.sh <br>
 ./runCGI.sh <br>
+<br>
+mkdir /upload <br>
+mkdir /upload/0 to 9 <br>
+chmod a=wrx * <br>
+<br>
 
