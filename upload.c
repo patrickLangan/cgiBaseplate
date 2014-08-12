@@ -1,6 +1,6 @@
 #include "fcgi_stdio.h"
-#include <stdlib.h>
 #include <string.h>
+#include <stdlib.h>
 
 /* todo
  * Error checking, handling, and prevention
@@ -54,6 +54,7 @@ int main (int argc, char **argv)
 
 		//Response
 		FCGI_printf ("Content-type: text/html\r\n\r\n");
+		FCGI_printf ("UPLOADED\n");
 
 		//Read file info and move file to permanent location
 		while  (readPostMultipart (fileName)) {
@@ -62,7 +63,16 @@ int main (int argc, char **argv)
 			readPostMultipart (fileHash);
 			readPostMultipart (fileSize);
 
-			sprintf (newFilePath, "/www/upload/%s", fileName);
+			printf ("<p>File name: %s</p>\n", fileName);
+			printf ("<p>File type: %s</p>\n", fileType);
+			printf ("<p>File path: %s</p>\n", filePath);
+			printf ("<p>File hash: %s</p>\n", fileHash);
+			printf ("<p>File size: %s</p>\n", fileSize);
+
+			sprintf (newFilePath, "/www/dump/%s", fileName);
+			printf ("Moving file to %s\n", newFilePath);
+
+			remove (newFilePath);
 			rename (filePath, newFilePath);
 		}
 
