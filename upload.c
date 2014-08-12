@@ -1,4 +1,7 @@
 #include "fcgi_stdio.h"
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
 #include <string.h>
 #include <stdlib.h>
 
@@ -40,13 +43,15 @@ int main (int argc, char **argv)
 	unsigned int length;
 	FCGI_FILE *file;
 
-	char *fileName = malloc (255);
-	char *fileType = malloc (255);
-	char *filePath = malloc (255);
-	char *fileHash = malloc (255);
-	char *fileSize = malloc (255);
+	char fileName[255];
+	char fileType[255];
+	char filePath[255];
+	char fileHash[255];
+	char fileSize[255];
 
-	char *newFilePath = malloc (255);
+	char newFilePath[255];
+
+	struct stat statBuf;
 
 	while (1) {
 		//The program will wait inside of FCGI_Accept untill it gets a new request
@@ -63,27 +68,25 @@ int main (int argc, char **argv)
 			readPostMultipart (fileHash);
 			readPostMultipart (fileSize);
 
-			printf ("<p>File name: %s</p>\n", fileName);
-			printf ("<p>File type: %s</p>\n", fileType);
-			printf ("<p>File path: %s</p>\n", filePath);
-			printf ("<p>File hash: %s</p>\n", fileHash);
-			printf ("<p>File size: %s</p>\n", fileSize);
+			FCGI_printf ("<p>File name: %s</p>\n", fileName);
+			FCGI_printf ("<p>File type: %s</p>\n", fileType);
+			FCGI_printf ("<p>File path: %s</p>\n", filePath);
+			FCGI_printf ("<p>File hash: %s</p>\n", fileHash);
+			FCGI_printf ("<p>File size: %s</p>\n", fileSize);
 
 			sprintf (newFilePath, "/www/dump/%s", fileName);
-			printf ("Moving file to %s\n", newFilePath);
+			FCGI_printf ("Moving file to %s\n", newFilePath);
 
-			remove (newFilePath);
+			if (!stat(newFilePath, &statBuf)) {
+				remove (newFilePath);
+				FCGI_puts ("<p>Replaced existing file</p>");
+			}
+
 			rename (filePath, newFilePath);
 		}
 
 		//Flush and free
 		FCGI_Finish ();
-		free (fileName);
-		free (fileType);
-		free (filePath);
-		free (fileHash);
-		free (fileSize);
-		free (newFilePath);
 	}
 }
 
