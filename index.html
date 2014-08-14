@@ -9,43 +9,58 @@
 <body>
 
 <form>
-	<input name="file" type="file" id="file"/>
+	<input name="file" type="file" id="file" multiple/>
 	<button type="button" id="button">UPLOAD</button>
 </form>
 
-<div>
-	<div id="progress" style="width: 400px; border: 1px solid black">
-		<div id="progressbar" style="width: 1px; background-color: black; border: 1px solid black"></div>
-	</div>
-</div>
-
 <script type="text/javascript" language="javascript"></script>
 <script>
-	document.getElementById ('button').onclick = function () {
-		var file = document.getElementById ('file').files.item (0);
+	function fileUpload (files, i) {
+		var file = files.item (i);
 
 		var postReq = new XMLHttpRequest ();
 		var postBody = new FormData ();  
-
-		postBody.append ('file', file); 
+		postBody.append ("file", file); 
 
 		postReq.upload.onprogress = function (evnt) {
 			if (evnt.lengthComputable) {
 				var percent = (evnt.loaded / evnt.total) * 400;  
-				document.getElementById ("progressbar").style.width = percent + 'px';
+				document.getElementById ("bar" + i).style.width = percent + "px";
 			}
 		}
 
-		postReq.onreadystatechange = function () {
-			if (postReq.readyState == 4) {
-				if (postReq.status == 200) {
-					document.getElementById ("progressbar").style.width = '400px';
-				}
+		if (i < files.length - 1) {
+			postReq.onreadystatechange = function () {
+				if (postReq.readyState == 4 && postReq.status == 200)
+					fileUpload (files, i + 1);
 			}
 		}
 
 		postReq.open ("POST", "/upload");
 		postReq.send (postBody);
+	}
+
+	document.getElementById ("button").onclick = function () {
+		var files = document.getElementById ("file").files;
+
+		for (var i = 0; i < files.length; i++) {
+			var div = document.createElement ("div");
+			div.id = "div" + i;
+			div.style.width = "400px";
+			div.style.border = "1px solid black";
+			document.body.appendChild (div);
+
+			var br = document.createElement ("br");
+			document.body.appendChild (br);
+
+			var div2 = document.createElement ("div");
+			div2.id = "bar" + i;
+			div2.style.width = "1px";
+			div2.style.border = "1px solid black";
+			document.getElementById("div" + i).appendChild (div2);
+		}
+
+		fileUpload (files, 0);
 	}
 
 </script>
