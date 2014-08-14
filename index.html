@@ -1,74 +1,55 @@
 <!doctype html>
-<html lang = "en-US">
+<html lang="en-US">
 <head>
-	<meta charset = "utf-8">
+	<meta charset="utf-8">
 	<title>File upload</title>
-	<meta name = "description" content = "Testing fastCGI file uploading">
-	<meta name = "robots" content = "index, follow">
+	<meta name="description" content="Testing fastCGI file uploading">
+	<meta name="robots" content="index, follow">
 </head>
 <body>
-	<form method = "post" action = "/post">
-		<input name = "data" type = "text"/>
-		<input type = "submit" value = "POST"/>
-	</form>
-	<br>
-	<form id = "upload" enctype = "multipart/form-data" action = "/upload" method = "post" onsubmit="openProgressBar (); return true;">
-		<input name = "file" type = "file" label = "fileupload"/>
-		<input type = "submit" value = "Send File"/>
-	</form>
-	<br>
-	<div>
-		<div id = "progress" style = "width: 400px; border: 1px solid black">
-			<div id = "progressbar" style = "width: 1px; background-color: black; border: 1px solid black"></div>
-		</div>
-		<div id = "tp">(progress)</div>
+
+<form>
+	<input name="file" type="file" id="file"/>
+	<button type="button" id="button">UPLOAD</button>
+</form>
+
+<div>
+	<div id="progress" style="width: 400px; border: 1px solid black">
+		<div id="progressbar" style="width: 1px; background-color: black; border: 1px solid black"></div>
 	</div>
+</div>
 
-	<script type = "text/javascript" language = "javascript"></script>
-	<script>
-		/* This code is from http://wiki.nginx.org/HttpUploadProgressModule */
+<script type="text/javascript" language="javascript"></script>
+<script>
+	document.getElementById ('button').onclick = function () {
+		var file = document.getElementById ('file').files.item (0);
 
-		interval = null;
+		var postReq = new XMLHttpRequest ();
+		var postBody = new FormData ();  
 
-		function openProgressBar () {
-			progressID = "thisIsAProgressID";
-			document.getElementById ("upload").action = "/upload?X-Progress-ID=" + progressID;
-			interval = window.setInterval (
-				function () {
-					fetch (progressID);
-				},
-				200
-			);
+		postBody.append ('file', file); 
+
+		postReq.upload.onprogress = function (evnt) {
+			if (evnt.lengthComputable) {
+				var percent = (evnt.loaded / evnt.total) * 400;  
+				document.getElementById ("progressbar").style.width = percent + 'px';
+			}
 		}
 
-		function fetch (progressID) {
-			req = new XMLHttpRequest ();
-			req.open ("GET", "/progress", 1);
-			req.setRequestHeader ("X-Progress-ID", progressID);
-			req.onreadystatechange = function () {
-				if (req.readyState == 4) {
-					if (req.status == 200) {
-						/* poor-man JSON parser */
-						var upload = eval (req.responseText);
-
-						document.getElementById ("tp").innerHTML = upload.state;
-
-						/* change the width if the inner progress-bar */
-						if (upload.state == "done" || upload.state == "uploading") {
-							bar = document.getElementById ("progressbar");
-							w = 400 * upload.received / upload.size;
-							bar.style.width = w + "px";
-						}
-						/* we are done, stop the interval */
-						if (upload.state == "done") {
-						window.clearTimeout (interval);
-						}
-					}
+		postReq.onreadystatechange = function () {
+			if (postReq.readyState == 4) {
+				if (postReq.status == 200) {
+					document.getElementById ("progressbar").style.width = '400px';
 				}
 			}
-			req.send (null);
 		}
-	</script>
+
+		postReq.open ("POST", "/upload");
+		postReq.send (postBody);
+	}
+
+</script>
+
 </body>
 </html>
 
